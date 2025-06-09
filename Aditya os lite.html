@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdityaOS Web Lite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet" />
+
+  <!-- code mirror js library cdns -->
+   
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/theme/dracula.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/javascript/javascript.min.js"></script>
+
+  <style>
+    /* body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: url('https://images.unsplash.com/photo-1519125323398-675f0ddb6308') no-repeat center center/cover;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+    } */
+
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: url('https://images.unsplash.com/photo-1556189250-72ba954cfc2b?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max') no-repeat center center/cover;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+    }
+
+    .taskbar {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+
+    .start {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 5px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .clock {
+      font-size: 16px;
+    }
+
+    .desktop {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .icon {
+      width: 70px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .icon img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .window {
+      position: absolute;
+      top: 20%;
+      left: 30%;
+      width: 300px;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid #fff;
+      border-radius: 10px;
+      display: none;
+      padding: 10px;
+      resize: both;
+      overflow: auto;
+    }
+
+    .window h2 {
+      margin: 0;
+      font-size: 18px;
+      border-bottom: 1px solid white;
+      padding-bottom: 5px;
+    }
+
+    .icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 5px;
+    }
+
+    /* to add scroll to file manager if only their is so many files */
+    #fileList {
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    /* for making windowa resizable */
+    /* .window {
+      resize: both;
+      overflow: auto;
+    } */
+  </style>
+</head>
+<body>
+  <div class="desktop">
+
+    <div class="icon" onclick="openChrome('https://www.google.com')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/chrome.png" />
+      <div>Chrome</div>
+    </div>
+    <div id="chrome" class="window">
+      <h2>
+        Chrome
+        <span style="float: right; cursor: pointer;" onclick="document.getElementById('chrome').style.display='none'">✖</span>
+      </h2>
+      <iframe id="chromeFrame" src="" style="width: 100%; height: 150px; border: none;"></iframe>
+    </div>
+
+    <!-- file Manager -->
+    <div class="icon" onclick="openApp('fileManager')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/folder-invoices--v1.png" />
+      <div>Files</div>
+    </div>
+
+    <div id="fileManager" class="window">
+      <h2>
+        File Manager
+        <span style="float: right; cursor: pointer;" onclick="closeApp('fileManager')">✖</span>
+      </h2>
+      <div id="fileList" style="font-size: 14px;"></div>
+    </div>
+
+    <div id="previewWindow" class="window">
+      <h2>
+        Preview
+        <span style="float: right; cursor: pointer;" onclick="closeApp('previewWindow')">✖</span>
+      </h2>
+      <iframe id="previewFrame" style="width: 100%; height: 150px; border: none; background: white;"></iframe>
+    </div>
+
+    <div class="icon" onclick="openApp('notes')">
+      <img src="https://img.icons8.com/ios/50/ffffff/note.png" />
+      <div>Notes</div>
+    </div>
+    <div class="icon" onclick="openApp('terminal')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/console.png" />
+      <div>Terminal</div>
+    </div>
+  </div>
+
+  <!-- for notes application -->
+  <div id="notes" class="window">
+    <h2>Notes</h2>
+    <input type="text" id="noteFilename" placeholder="Filename" style="width: 100%; margin-bottom: 5px;" />
+    <textarea id="noteContent" style="width: 100%; height: 110px; background: transparent; color: white; border: none;"></textarea>
+    <button onclick="saveNote()">Save</button>
+  </div>
+
+  <div id="terminal" class="window">
+    <h2>Terminal</h2>
+    <p style="font-size: 14px">$ Hello from AdityaOS Web Lite!</p>
+  </div>
+
+  <div class="taskbar">
+    <div class="start">AdityaOS</div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <script>
+    function openApp(id) {
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function openChrome(url) {
+      const frame = document.getElementById('chromeFrame');
+      frame.src = url;
+      document.getElementById('chrome').style.display = 'block';
+    }
+
+    // to drag store notes in local storage of device 
+
+    const notesArea = document.querySelector("#notes textarea");
+
+    notesArea.value = localStorage.getItem("adityaos_notes") || "";
+
+    notesArea.addEventListener("input", () => {
+      localStorage.setItem("adityaos_notes", notesArea.value);
+    });
+
+    // to open chrome tab in adityaos
+    // openChrome('https://wikipedia.org')
+
+    // drag apps
+
+    document.querySelectorAll('.window').forEach(win => {
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      win.querySelector('h2').style.cursor = 'move'; // indicate draggable title bar
+
+      win.querySelector('h2').addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.clientX - win.offsetLeft;
+        offsetY = e.clientY - win.offsetTop;
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (isDragging) {
+          win.style.left = (e.clientX - offsetX) + 'px';
+          win.style.top = (e.clientY - offsetY) + 'px';
+        }
+      });
+    });
+
+    function closeApp(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    // Add close buttons dynamically to existing windows except Chrome (which already has one)
+    ['notes', 'terminal'].forEach(id => {
+      const win = document.getElementById(id);
+      const header = win.querySelector('h2');
+      
+      // Create close button span
+      const closeBtn = document.createElement('span');
+      closeBtn.style.cssText = 'float: right; cursor: pointer;';
+      closeBtn.textContent = '✖';
+      
+      // Add click event to close window
+      closeBtn.onclick = () => closeApp(id);
+      
+      // Append close button to header
+      header.appendChild(closeBtn);
+    });
+
+    // script for notes to save 
+    function saveNote() {
+      const filename = document.getElementById("noteFilename").value.trim();
+      const content = document.getElementById("noteContent").value;
+
+      if (!filename) {
+        alert("Please enter a filename.");
+        return;
+      }
+
+      localStorage.setItem(`adityaos_file_${filename}`, content);
+      alert(`Saved as ${filename}`);
+      loadFiles(); // refresh file manager
+    }
+
+    // for file manager
+    function loadFiles() {
+      const fileList = document.getElementById("fileList");
+      fileList.innerHTML = "";
+
+      for (let key in localStorage) {
+        if (key.startsWith("adityaos_file_")) {
+          const filename = key.replace("adityaos_file_", "");
+          fileList.innerHTML += `
+            <div>
+              <strong>${filename}</strong>
+              <button onclick="openFile('${filename}')">Open</button>
+              <button onclick="previewFile('${filename}')">Preview</button>
+              <button onclick="deleteFile('${filename}')">Delete</button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function openFile(filename) {
+      const content = localStorage.getItem(`adityaos_file_${filename}`);
+      document.getElementById("noteFilename").value = filename;
+      document.getElementById("noteContent").value = content;
+      openApp('notes');
+    }
+
+    function deleteFile(filename) {
+      if (confirm(`Delete file "${filename}"?`)) {
+        localStorage.removeItem(`adityaos_file_${filename}`);
+        loadFiles();
+      }
+    }
+
+    loadFiles(); // initialize on load
+
+    function previewFile(filename) {
+      const content = localStorage.getItem(`adityaos_file_${filename}`);
+      const previewFrame = document.getElementById("previewFrame");
+
+      // Inject the HTML content into the iframe
+      const blob = new Blob([content], { type: "text/html" });
+      previewFrame.src = URL.createObjectURL(blob);
+
+      openApp('previewWindow');
+    }
+
+    // windows front of click
+    let zIndexCounter = 10;
+    document.querySelectorAll('.window').forEach(win => {
+      win.addEventListener('mousedown', () => {
+        zIndexCounter++;
+        win.style.zIndex = zIndexCounter;
+      });
+    });
+
+    
+  </script>
+</body>
+</html>
